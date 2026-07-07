@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 
     <body>
 
-    <h1>🚀 Welcome to  EKS</h1>
+    <h1>🚀 Welcome to EKS site</h1>
 
     <h2>Version 1.0</h2>
 
