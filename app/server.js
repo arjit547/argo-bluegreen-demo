@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 
     <body>
 
-    <h1>🚀 Welcome to Elastic Kubernetes Service</h1>
+    <h1>🚀 Welcome to Kubernetes Service</h1>
 
     <h2>Version 1.0</h2>
 
