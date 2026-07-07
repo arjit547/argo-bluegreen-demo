@@ -25,7 +25,7 @@ spec:
 
       - name: argo-demo
 
-        image: 638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:5783fb12232afd8733097d12a8e6b94a0b10101a
+        image: 638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:e25770b92a5b6fde2b2ba6e4dbf500f68c055202
 
         imagePullPolicy: Always
 
