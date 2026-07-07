@@ -41,6 +41,6 @@ spec:
 
       previewService: argo-demo-preview
 
-      autoPromotionEnabled: false
+      autoPromotionEnabled: true
 
       previewReplicaCount: 1
