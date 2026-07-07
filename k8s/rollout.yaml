@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+
+metadata:
+  name: argo-demo
+  namespace: demo
+
+spec:
+  replicas: 2
+
+  revisionHistoryLimit: 2
+
+  selector:
+    matchLabels:
+      app: argo-demo
+
+  template:
+    metadata:
+      labels:
+        app: argo-demo
+
+    spec:
+      containers:
+      - name: argo-demo
+
+        image: 638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:latest
+
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 3000
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+
+  strategy:
+
+    blueGreen:
+
+      activeService: argo-demo-active
+
+      previewService: argo-demo-preview
+
+      autoPromotionEnabled: false
+
+      previewReplicaCount: 1
