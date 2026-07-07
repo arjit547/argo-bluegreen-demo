@@ -23,7 +23,7 @@ spec:
       containers:
       - name: argo-demo
 
-        image: 638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:7d3b579a7da02781c8097cdf412bf00e3a72c51a
+        image: 638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:f6ca8032d5c3b104d3ec75f5f4d94eaf5398060a
 
         imagePullPolicy: Always
 
