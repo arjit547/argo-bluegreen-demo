@@ -1,3 +1,78 @@
+# name: Build Push Deploy
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# permissions:
+#   contents: write
+
+# jobs:
+
+#   deploy:
+
+#     runs-on: ubuntu-latest
+
+#     env:
+#       IMAGE_NAME: argo
+
+#     steps:
+
+#       - uses: actions/checkout@v4
+
+#       - name: Configure AWS
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       - name: Login ECR
+#         uses: aws-actions/amazon-ecr-login@v2
+
+#       - name: Build Image
+#         run: |
+#           docker build \
+#           -t $IMAGE_NAME:${{ github.sha }} \
+#           ./app
+
+#       - name: Push Image
+#         run: |
+
+#           docker tag \
+#           $IMAGE_NAME:${{ github.sha }} \
+#           638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:${{ github.sha }}
+
+#           docker push \
+#           638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:${{ github.sha }}
+
+#       - name: Update Rollout
+#         run: |
+
+#           sed -i "s|image:.*|image: 638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:${{ github.sha }}|g" k8s/rollout.yaml
+
+#       - name: Commit Manifest
+
+#         run: |
+
+#           git config user.email github-actions@github.com
+
+#           git config user.name github-actions
+
+#           git add k8s/rollout.yaml
+
+#           git commit -m "Deploy ${{ github.sha }}" || true
+
+#           git push
+
+
+
+
+
+
+
+
 name: Build Push Deploy
 
 on:
@@ -9,59 +84,55 @@ permissions:
   contents: write
 
 jobs:
-
   deploy:
-
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_NAME: argo
+      IMAGE_NAME: ${{ secrets.ECR_REPOSITORY }}
 
     steps:
-
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login ECR
+      - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Image
+      - name: Build Docker Image
         run: |
           docker build \
-          -t $IMAGE_NAME:${{ github.sha }} \
-          ./app
+            -t $IMAGE_NAME:${{ github.sha }} \
+            ./app
 
-      - name: Push Image
+      - name: Tag Docker Image
         run: |
-
           docker tag \
-          $IMAGE_NAME:${{ github.sha }} \
-          638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:${{ github.sha }}
+            $IMAGE_NAME:${{ github.sha }} \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$IMAGE_NAME:${{ github.sha }}
 
-          docker push \
-          638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:${{ github.sha }}
-
-      - name: Update Rollout
+      - name: Push Docker Image
         run: |
+          docker push \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$IMAGE_NAME:${{ github.sha }}
 
-          sed -i "s|image:.*|image: 638111422814.dkr.ecr.us-east-1.amazonaws.com/argo:${{ github.sha }}|g" k8s/rollout.yaml
+      - name: Update Rollout Manifest
+        run: |
+          IMAGE_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$IMAGE_NAME:${{ github.sha }}"
+          sed -i "s|image:.*|image: ${IMAGE_URI}|g" k8s/rollout.yaml
 
       - name: Commit Manifest
-
         run: |
-
-          git config user.email github-actions@github.com
-
-          git config user.name github-actions
+          git config user.email "github-actions@github.com"
+          git config user.name "github-actions"
 
           git add k8s/rollout.yaml
 
-          git commit -m "Deploy ${{ github.sha }}" || true
+          git commit -m "Deploy ${{ github.sha }}" || echo "No changes"
 
           git push
